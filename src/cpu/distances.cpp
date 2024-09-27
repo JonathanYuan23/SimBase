@@ -5,11 +5,15 @@ namespace simbase::cpu
 
 Distances::Distances() {}
 
-// maybe unneccessary, just use Eigen::VectorXd::dot()?
 double Distances::euclidean(VectorXd a, VectorXd b) const
 {
     assert(a.size() == b.size());
-    return a.dot(b);
+    double sum = 0;
+    for(int i = 0; i < a.size(); ++i)
+    {
+        sum += pow(a[i] - b[i], 2);
+    }
+    return sqrt(sum);
 }
 
 double Distances::manhattan(VectorXd a, VectorXd b) const
