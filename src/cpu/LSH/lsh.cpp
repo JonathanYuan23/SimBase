@@ -11,7 +11,7 @@ LSHIndex::LSHIndex(int dimensions):
 	// generate random hyperplanes
 	for (int i = 0; i < numHyperplanes; i++)
 	{
-		hyperplanes.push_back(VectorXd::Random(dimensions) - (0.5 * VectorXd::Ones(dimensions)));
+		hyperplanes.push_back(VectorXd::Random(dimensions));
 	}
 }
 
