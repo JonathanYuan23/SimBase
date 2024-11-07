@@ -14,7 +14,7 @@ class Index
 {
 public:
 	Index(int dimensions);
-
+	
 	// add an entry to the index
 	void Add(VectorXd point);
 

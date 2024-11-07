@@ -57,4 +57,16 @@ double Distances::hamming(VectorXd a, VectorXd b) const
     return sum;
 }
 
+double Distances::hamming(std::string a, std::string b) const 
+{
+    assert(a.size() == b.size());
+    double sum = 0;
+    for(int i = 0; i < a.size(); ++i)
+    {
+        sum += (a[i] != b[i]);
+    }
+    return sum;
+}
+
+
 } // namespace simbase::cpu
