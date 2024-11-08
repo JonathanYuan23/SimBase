@@ -1,8 +1,10 @@
 #include "../index.h"
+#include "../distances.h"
 #include <string>
 #include <set>
 #include <unordered_map>
 #include <bitset>
+#include <queue>
 
 using Eigen::VectorXd;
 using std::string;
@@ -15,12 +17,13 @@ namespace simbase::cpu
 class LSHIndex: public Index 
 {
 private:
-    // creates numHyperplane^2 buckets
+    // creates 2^numHyperplane buckets
     int numHyperplanes;
     int size;
 
     std::unordered_map<string, std::vector<int>> hashTables;
     std::vector<VectorXd> hyperplanes;
+    string hash(VectorXd point);
     
 public:
     LSHIndex(int dimensions);
