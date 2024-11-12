@@ -19,7 +19,7 @@ public:
     double cosine(VectorXd a, VectorXd b) const;
     double minkowski(VectorXd a, VectorXd b, double p) const;
     double hamming(VectorXd a, VectorXd b) const;
-    double hamming(std::string a, std::string b) const;
+    static int hamming(std::string a, std::string b);
 
 };
 

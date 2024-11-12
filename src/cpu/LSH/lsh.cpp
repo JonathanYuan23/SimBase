@@ -18,16 +18,16 @@ LSHIndex::LSHIndex(int dimensions):
 void LSHIndex::Add(VectorXd point)
 {
 	assert(dimensions == point.size());
-	string hash = hash(point);
+	string hashValue = hash(point);
 
 	// if no hash bucket exists for the hash value, create one
-	if (hashTables.find(hash) == hashTables.end())
+	if (hashTables.find(hashValue) == hashTables.end())
 	{
-		hashTables[hash] = std::vector<int>();
+		hashTables[hashValue] = std::vector<int>();
 	}
 
 	// add the point index to the hash bucket
-	hashTables[hash].push_back(size++);
+	hashTables[hashValue].push_back(size++);
 	points.push_back(point);
 }
 
@@ -37,37 +37,41 @@ std::vector<VectorXd> LSHIndex::search(VectorXd query, int k) const
 	assert(k <= n_total);
 
 	// calculate hash
-	string hash = hash(query);
+	string hashValue = hash(query);
 
-	vector<VectorXd> nearest;
+	std::vector<VectorXd> nearest;
 
 	// we account for all cases: the bin for the query contains < k elements, or not
 	
 	// check if bin contains < k values, or doesn't exist (slow, but unlikely to happen w/ enough points)
-	if(hashTables.find(hash) == hashTables.end() || hashTables[hash].size() < k) {
+	auto entry = hashTables.find(hashValue);
+	if(entry == hashTables.end() || entry->second.size() < k) {
 		// check every other hash table based on hamming distance
-		std::priority_queue<std::pair<double, string>, std::greater<int>> binPQ;
-		for(auto kv : hashTables) {
-			int dist = hamming(hash, kv.first);
 
+		// ctor order: Type, Container, Comparator (creates min heap storing pairs)
+		std::priority_queue<std::pair<int, string>, std::vector<std::pair<int, string>>, std::greater<std::pair<int, string>>> binPQ;
+		for(auto kv : hashTables) {
+			int dist = Distances::hamming(hashValue, kv.first);
 			binPQ.push({dist, kv.first});
 		}
 
 		int candidates = 0;
-		vector<string> binCandidates;
+		std::vector<string> binCandidates;
 		// pop from pq until there are enough candidates
 		while(candidates < k) {
-			string bin = binPQ.pop().second;
-			candidates += hashTables[bin].size();
+			string bin = binPQ.top().second;
+			binPQ.pop();
+			candidates += hashTables.find(bin)->second.size();
 			binCandidates.emplace_back(bin);
 		}
 
 		/* Search for nearest */
 		// pair as {inner product to query, index in points}
 		std::priority_queue<std::pair<double, int>> pq;
-
+		
 		for(string bin : binCandidates) {
-			for(int i : hashTables[bin]) {
+			auto vec = hashTables.find(bin)->second;
+			for(int i : vec) {
 				double IP = query.dot(points[i]);
 				pq.push({IP, i});
 
@@ -90,7 +94,10 @@ std::vector<VectorXd> LSHIndex::search(VectorXd query, int k) const
 	}
 
 	/*  we only need to check our one bin */
-	for(int i : hashTables[hash]) {
+	std::priority_queue<std::pair<double, int>> pq;
+	auto keyBin = hashTables.find(hashValue)->second;
+
+	for(int i : keyBin) {
 		double IP = query.dot(points[i]);
 		pq.push({IP, i});
 
@@ -111,7 +118,7 @@ std::vector<VectorXd> LSHIndex::search(VectorXd query, int k) const
 	return nearest;
 }
 
-string LSHIndex::hash(VectorXd point) {
+string LSHIndex::hash(VectorXd point) const {
 	// TODO: use something better to store hash values, bitset (?)
 	string hash = "";
 	// calculate the hash value for each hash function

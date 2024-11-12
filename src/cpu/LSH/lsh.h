@@ -23,7 +23,7 @@ private:
 
     std::unordered_map<string, std::vector<int>> hashTables;
     std::vector<VectorXd> hyperplanes;
-    string hash(VectorXd point);
+    string hash(VectorXd point) const;
     
 public:
     LSHIndex(int dimensions);
